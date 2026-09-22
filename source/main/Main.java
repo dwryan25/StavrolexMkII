@@ -14,7 +14,9 @@ public class Main {
 
             GridData crossword = new GridData(15, 15);
             GamePanel gamePanel = new GamePanel(crossword, 50);
-            KeyHandler keyHandler = new KeyHandler(gamePanel);
+            new KeyHandler(crossword,gamePanel);
+
+            window.add(gamePanel);
             window.pack();
 
 

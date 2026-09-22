@@ -7,29 +7,30 @@ import java.awt.*;
 
 public class GamePanel extends JPanel {
 
-    final int origTileSize = 20;
-    final int scale = 3;
-
-    public final int tileSize = origTileSize * scale;
-    final int maxScreenCol = 30;
-    final int maxScreenRow = 18;
-
-    final int screenWidth = tileSize*maxScreenCol;
-    final int screenHeight = tileSize*maxScreenRow;
-
     private final int rows = 15;
     private final int cols = 15;
 
+    private final int cellSize;
+    private final GridData grid;
 
-    KeyHandler keyH = new KeyHandler(this);
+    //Colors for grid and background
+    private static final Color SELECTED_CELL = Color.BLUE;
+    private static final Color BLACK_CELL = Color.BLACK;
+    private static final Font CELL_FONT = new Font("Bold", Font.BOLD, 28);
+    private static final Color TEXT_COLOR = Color.BLACK;
+
 
     public GamePanel(GridData grid, int cellSize){
-        this.setPreferredSize(new Dimension(screenWidth,screenHeight));
+        this.cellSize = cellSize;
+        this.grid = grid;
+
+        this.setPreferredSize(new Dimension(grid.getRows()*cellSize + 1,grid.getCols()*cellSize + 1));
         this.setBackground(Color.WHITE);
-        this.setDoubleBuffered();
-        this.addKeyListener(keyH);
+
+
 
         this.setFocusable(true);
+
 
     }
 
@@ -38,8 +39,56 @@ public class GamePanel extends JPanel {
 
         Graphics2D g2 = (Graphics2D) g;
 
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setFont(CELL_FONT);
+
+        FontMetrics fm = g2.getFontMetrics();
+
+        System.out.println("drawing grid");
+
+        int selectedRow = grid.getSelectedRow();
+        int selectedCol = grid.getSelectedCol();
 
 
+        for (int r = 0; r <15; r++){
+            for (int c = 0; c <15;c++){
+                //Draw the cell
+                int x = cellSize*c;
+                int y = cellSize*r;
+
+                if (grid.isCellBlack(r,c)) {
+                   g2.setColor(BLACK_CELL);
+                   g2.fillRect(x, y, cellSize, cellSize);
+                }
+                else if(r == selectedRow && c == selectedCol){
+                    g2.setColor(SELECTED_CELL);
+                    g2.drawRect(x, y, cellSize - 1, cellSize - 1);
+                }
+                else{
+                    g2.setColor(Color.BLACK);
+                    g2.drawRect(x, y, cellSize - 1, cellSize - 1);
+                }
+                //Draw the character inside the cell
+                char ch = grid.getCellChar(r, c);
+                if(ch != '\0' && !grid.isCellBlack(r,c)){
+                    System.out.println("Passed character check");
+                    g2.setColor(TEXT_COLOR);
+                    int textWidth = fm.charWidth(ch);
+                    int textHeight = fm.getAscent();
+                    int textX = x + (cellSize-textWidth) / 2;
+                    int textY = y + (cellSize+textHeight)/ 2;
+                    System.out.printf("Printing character at row %d and col %d", r, c);
+                    g2.drawString(String.valueOf(ch), textX, textY);
+                }
+            }
+        }
+
+        g2.dispose();
+    }//end paintComponent
+
+    public int getCellSize(){
+        return cellSize;
     }
 }//End class GamePanel
 
