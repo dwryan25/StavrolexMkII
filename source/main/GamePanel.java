@@ -46,6 +46,7 @@ public class GamePanel extends JPanel {
 
         int selectedRow = grid.getSelectedRow();
         int selectedCol = grid.getSelectedCol();
+        boolean isHorizontal = grid.isDirectionHorizontal();
 
 
         for (int r = 0; r <15; r++){
@@ -79,11 +80,33 @@ public class GamePanel extends JPanel {
             }//end column loop
         }//End row loop
         //Draw the shaded line on selected row or column
-        g2.setColor(Color.GREEN);
-        int blockLength = grid.getBlockLength(selectedRow, selectedCol);
+        int[] wordIndices;
+        g2.setColor(Color.BLUE);
+        wordIndices = isHorizontal ? grid.getHorizontalWordIndices(selectedRow, selectedCol) : grid.getVerticalWordIndices(selectedRow, selectedCol);
+        int start = wordIndices[0];
+        int end = wordIndices[1];
+        int blockLength = end - start + 1;
+        System.out.printf(" index %d to %d \n", wordIndices[0], wordIndices[1]);
         System.out.println("Block length is " + blockLength + "\n");
-        int[] blockPositions = grid.getBlock(selectedRow, selectedCol, blockLength);
+        if(isHorizontal){
+            while(start <= end){
+                if(start == selectedCol){start++; continue;}
+                int x = start * cellSize;
+                int y = selectedRow * cellSize;
+                g2.drawRect(x, y, cellSize - 1, cellSize - 1);
+                start++;
+        }
+        }
+        else{
+            while(start <= end){
+                if (start == selectedRow){start++; continue;}
+                int x = selectedCol * cellSize;
+                int y = start * cellSize;
+                g2.drawRect(x, y, cellSize - 1, cellSize - 1);
+                start++;
 
+            }
+        }
 
 
         g2.dispose();

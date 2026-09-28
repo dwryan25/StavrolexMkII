@@ -30,6 +30,7 @@ public class KeyHandler extends KeyAdapter {
                 int col = e.getX() / gp.getCellSize();
 
                 grid.setSelectedCell(row, col);
+                grid.switchDirection();
 
                 gp.repaint();
             }
@@ -50,6 +51,8 @@ public class KeyHandler extends KeyAdapter {
                     case KeyEvent.VK_LEFT -> grid.moveSelector(0, -1);
                     case KeyEvent.VK_UP -> grid.moveSelector(-1, 0);
                     case KeyEvent.VK_DOWN -> grid.moveSelector(1, 0);
+                    case KeyEvent.VK_BACK_SPACE -> grid.backSelector();
+                    case KeyEvent.VK_SPACE -> grid.switchDirection();
 
 
                     default -> {
@@ -59,6 +62,7 @@ public class KeyHandler extends KeyAdapter {
                             System.out.println("setting char");
                             grid.setCellChar(row, col, input);
                         }
+                        grid.advanceSelector();
                     }
 
 

@@ -1,5 +1,6 @@
 package main;
 
+
 public class GridData {
     private final int rows;
     private final int cols;
@@ -10,6 +11,7 @@ public class GridData {
     private int selectedRow;
     private int selectedCol;
 
+    private boolean isSymmetrical = true;
     private boolean isHorizontal = true;
 
 
@@ -26,17 +28,44 @@ public class GridData {
     }
 
     public void toggleCellBlack(int row, int col){
-        if (cellFilled[row][col]) {
-            cellFilled[row][col] = false;
+        if(isSymmetrical){
+            int symRow = rows - 1 - selectedRow;
+            int symCol = cols - 1 - selectedCol;
+            if(symRow == row && symCol == col){
+                cellFilled[row][col] = !cellFilled[row][col];
+            }
+            cellFilled[row][col] = !cellFilled[row][col];
+            cellFilled[symRow][symCol] = !cellFilled[symRow][symCol];
         }
-        else{
-            cellFilled[row][col] = true;
+        else {
+            cellFilled[row][col] = !cellFilled[row][col];
+        }
+    }
+
+    public void advanceSelector(){
+        if(isHorizontal){
+            selectedCol = Math.clamp(selectedCol+1, 0, cols-1);
+        }
+        else {
+            selectedRow = Math.clamp(selectedRow+1, 0, rows-1);
+        }
+    }
+
+    public void backSelector(){
+        cellValues[selectedRow][selectedCol] = '\0';
+        if(isHorizontal){
+            selectedCol = Math.clamp(selectedCol-1, 0, cols-1);
+        }
+        else {
+            selectedRow = Math.clamp(selectedRow-1, 0, rows-1);
         }
     }
 
     public void moveSelector(int vert, int hor){
         if (vert == -1 || vert == 1){
             isHorizontal = false;
+        }
+        else{isHorizontal = true;
         }
         selectedRow = Math.clamp(selectedRow + vert, 0, rows - 1);
         selectedCol = Math.clamp(selectedCol + hor, 0, cols - 1);
@@ -45,7 +74,6 @@ public class GridData {
         if (row >= 0 && row < rows && col >= 0 && col < cols) {
             selectedRow = row;
             selectedCol = col;
-
 
         }
     }
@@ -65,87 +93,52 @@ public class GridData {
         isHorizontal = !isHorizontal;
     }
 
+    public String getWord(int[] indices){
 
-
-    public int getBlockLength(int row, int col){
-        System.out.println("Calling getBlockLength");
-        int blockLength = 0;
-        int backPointer,frontPointer;
-        if(isHorizontal) {
-            backPointer = col;
-            frontPointer = col;
-        }
-        else{
-            backPointer = row;
-            frontPointer = row;
-        }
-        if(cellFilled[row][col]) {
-            return 0;
-        }
-        else if(isHorizontal) {
-            while (!cellFilled[row][backPointer] || !cellFilled[row][frontPointer]) {
-                System.out.printf("backPointer: %d and frontPointer %d\n", backPointer, frontPointer);
-                if (!cellFilled[row][frontPointer] && frontPointer < 15) {
-                    System.out.println("Passed front null or black square check");
-                    blockLength++;
-                    frontPointer++;
-                }
-                if (!cellFilled[row][backPointer] && backPointer > 0) {
-                    System.out.println("Passed back null or black square check");
-                    blockLength++;
-                    backPointer--;
-                }
-                if(frontPointer == 15 || backPointer == 0){
-                    return cols;
-                }
-            }
-        }
-        else {
-            while (!cellFilled[backPointer][col] || !cellFilled[frontPointer][col]){
-                if(!cellFilled[frontPointer][col] && frontPointer < 15){
-                    blockLength++;
-                    frontPointer++;
-                }
-                if(!cellFilled[row][backPointer] && backPointer > 0){
-                    blockLength++;
-                    backPointer--;
-                }
-                if(backPointer == 0 || frontPointer == 15){
-                    return cols;
-                }
-            }
-        }
-        return blockLength;
+        return null;
     }
 
-    public int[] getBlock(int row, int col, int blockLength){
-        int[] adjacentCells = new int[blockLength];
-        int backPointer;
-
-        if(cellFilled[row][col]) {
-            return null;
-        }
-        else if(isHorizontal){
-            //backtrack to find the first cell
-            backPointer = col;
-            while(!cellFilled[row][backPointer] && backPointer > 0){
-                backPointer--;
-                if(backPointer == 0){
-                    break;
-                }
-            }
-            //Loop through the whole block and capture each row or col val in an array
-            while(!cellFilled[row][backPointer]){
-                adjacentCells[backPointer] = backPointer;
-                backPointer++;
-                if(backPointer == 14){
-                    break;
-                }
+    public int[] getHorizontalWordIndices(int row, int col){
+        int start = -1;
+        int end = 15;
+        //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
+        for (int i = col; i >= 0; i--){
+            if(cellFilled[row][i]){
+                start = i+1;
+                break;
             }
         }
-        return adjacentCells;
-    }//end getBlock
+        for (int j = col; j <= 14; j++){
+            if(cellFilled[row][j]){
+                end = j-1;
+                break;
+            }
+        }
+        start = (start==-1) ? 0 : start;
+        end = (end==15) ? 14 : end;
+        return new int[]{start, end};
+    }
+    public int[] getVerticalWordIndices(int row, int col){
+        int start = -1;
+        int end = 15;
+        //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
+        for (int i = row; i >= 0; i--){
+            if(cellFilled[i][col]){
+                start = i+1;
+                break;
+            }
+        }
+        for (int j = row; j <= 14; j++){
+            if(cellFilled[j][col]){
+                end = j-1;
+                break;
+            }
+        }
+        start = (start==-1) ? 0 : start;
+        end = (end==15) ? 14 : end;
 
+        return new int[]{start, end};
+    }
 
 
     public int getRows(){
