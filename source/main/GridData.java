@@ -7,6 +7,7 @@ public class GridData {
 
     private final char[][] cellValues;
     private final boolean[][] cellFilled;
+    private final int[][] clueNumbers;
 
     private int selectedRow;
     private int selectedCol;
@@ -20,6 +21,7 @@ public class GridData {
         this.cols = cols;
         this.cellValues = new char[rows][cols];
         this.cellFilled = new boolean[rows][cols];
+        this.clueNumbers = new int[rows][cols];
 
     }
 
@@ -62,11 +64,7 @@ public class GridData {
     }
 
     public void moveSelector(int vert, int hor){
-        if (vert == -1 || vert == 1){
-            isHorizontal = false;
-        }
-        else{isHorizontal = true;
-        }
+        isHorizontal = vert != -1 && vert != 1;
         selectedRow = Math.clamp(selectedRow + vert, 0, rows - 1);
         selectedCol = Math.clamp(selectedCol + hor, 0, cols - 1);
     }
@@ -78,22 +76,43 @@ public class GridData {
         }
     }
 
-    public char getCellChar(int row, int col){
-        return cellValues[row][col];
+    public void updateClueNumbers(){
+        int clueCounter = 1;
+        for( int i = 0; i < 15; i++){
+            for(int j = 0; j < 15; j++){
+                if(i-1 < 0 || j-1 < 0){
+                    if(cellFilled[i][j]){
+                        clueNumbers[i][j] = 0;
+                    }
+                    else {
+                        clueNumbers[i][j] = clueCounter;
+                        clueCounter++;
+                    }
+               }//accounts for edge of grid cases
+               else if ((cellFilled[i][j-1] || cellFilled[i-1][j]) && !cellFilled[i][j]){
+                   clueNumbers[i][j] = clueCounter;
+                   clueCounter++;
+               }//adjacent to filled square cases
+               else if (cellFilled[i][j]){
+                   clueNumbers[i][j] = 0;
+                }//filled cases
+               else{
+                   clueNumbers[i][j] = 0;
+                }//middle of grid cases
+
+            }
+        }
     }
 
-    public boolean isCellBlack(int row, int col){
-        return cellFilled[row][col];
-    }
-    public boolean isDirectionHorizontal(){
-        return isHorizontal;
-    }
 
-    public void switchDirection(){
-        isHorizontal = !isHorizontal;
-    }
 
-    public String getWord(int[] indices){
+    public String getWord(int row, int col){
+
+        //if string is horizontal find the word based on the columns
+
+        //if string is vertical find word based on rows
+
+
 
         return null;
     }
@@ -141,9 +160,28 @@ public class GridData {
     }
 
 
+    public int getCellClueNumber(int row, int col){ return clueNumbers[row][col];}
+
+    public char getCellChar(int row, int col){
+        return cellValues[row][col];
+    }
+
+    public boolean isCellBlack(int row, int col){
+        return cellFilled[row][col];
+    }
+
+    public boolean isDirectionHorizontal(){
+        return isHorizontal;
+    }
+
+    public void switchDirection(){
+        isHorizontal = !isHorizontal;
+    }
+
     public int getRows(){
         return rows;
     }
+
     public int getCols(){
         return cols;
     }

@@ -8,12 +8,14 @@ import java.awt.event.MouseEvent;
 
 public class KeyHandler extends KeyAdapter {
     private final GamePanel gp;
+    private final WordPanel wp;
     private final GridData grid;
 
 
-    public KeyHandler(GridData grid, GamePanel gp){
+    public KeyHandler(GridData grid, GamePanel gp, WordPanel wp){
         this.gp = gp;
         this.grid = grid;
+        this.wp = wp;
 
         attachListeners();
     }
