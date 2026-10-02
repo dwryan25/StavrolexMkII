@@ -194,9 +194,18 @@ public class GridData {
     }
 
 
-    public int getCellClueNumber(int row, int col){
+    public int getCellClueNumber(int row, int col) {
         return clueNumbers[row][col];
     }
+
+    public int getHorizontalClueNumber(int row, int col){
+            return clueNumbers[row][getHorizontalWordIndices(row, col)[0]];
+    }
+
+    public int getVerticalClueNumber(int row, int col){
+        return clueNumbers[getVerticalWordIndices(row, col)[0]][col];
+    }
+
 
     public char getCellChar(int row, int col){
         return cellValues[row][col];
