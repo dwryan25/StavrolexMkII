@@ -29,6 +29,10 @@ public class GridData {
         cellValues[row][col] = input;
     }
 
+    public void toggleSymmetry(){
+        isSymmetrical = !isSymmetrical;
+    }
+
     public void toggleCellBlack(int row, int col){
         if(isSymmetrical){
             int symRow = rows - 1 - selectedRow;

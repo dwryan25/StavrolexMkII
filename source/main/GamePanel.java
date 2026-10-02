@@ -7,9 +7,6 @@ import java.awt.*;
 
 public class GamePanel extends JPanel {
 
-    private final int rows = 15;
-    private final int cols = 15;
-
     private final int cellSize;
     private final GridData grid;
 
