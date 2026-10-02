@@ -1,5 +1,6 @@
 package main;
 
+import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -12,6 +13,7 @@ public class KeyHandler extends KeyAdapter {
     private final GridData grid;
 
 
+
     public KeyHandler(GridData grid, GamePanel gp, WordPanel wp){
         this.gp = gp;
         this.grid = grid;
@@ -19,7 +21,6 @@ public class KeyHandler extends KeyAdapter {
 
         attachListeners();
     }
-
 
     private void attachListeners() {
         gp.addMouseListener(new MouseAdapter() {
@@ -35,11 +36,9 @@ public class KeyHandler extends KeyAdapter {
                 grid.switchDirection();
 
                 gp.repaint();
+                wp.updateWordPanel();
             }
         });
-
-
-
 
         gp.addKeyListener(new KeyAdapter() {
             @Override
@@ -69,7 +68,9 @@ public class KeyHandler extends KeyAdapter {
 
 
                 }
+
                 gp.repaint();
+                wp.updateWordPanel();
             }//end keyPressed
 
         });

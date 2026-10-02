@@ -104,17 +104,47 @@ public class GridData {
         }
     }
 
-
-
-    public String getWord(int row, int col){
-
+    public String getAcrossWord(int row, int col){
+        int start;
+        int end;
+        StringBuilder st = new StringBuilder();
         //if string is horizontal find the word based on the columns
+        int[] acrossIndices = getHorizontalWordIndices(row, col);
+        start = acrossIndices[0];
+        end = acrossIndices[1];
 
-        //if string is vertical find word based on rows
+        while(start <= end){
+            char cellVal = getCellChar(row, start);
+            if(cellVal == '\0'){
+                st.append('-');
+            }
+            else{
+                st.append(cellVal);
+            }
+            start++;
+        }
+        return st.toString();
+    }
 
 
-
-        return null;
+    public String getDownWord(int row, int col){
+        int start;
+        int end;
+        StringBuilder st = new StringBuilder();
+        int[] acrossIndices = getVerticalWordIndices(row, col);
+        start = acrossIndices[0];
+        end = acrossIndices[1];
+        while(start <= end){
+            char cellVal = getCellChar(start, col);
+            if(cellVal == '\0'){
+                st.append('-');
+            }
+            else{
+                st.append(cellVal);
+            }
+            start++;
+        }
+        return st.toString();
     }
 
     public int[] getHorizontalWordIndices(int row, int col){
@@ -160,7 +190,9 @@ public class GridData {
     }
 
 
-    public int getCellClueNumber(int row, int col){ return clueNumbers[row][col];}
+    public int getCellClueNumber(int row, int col){
+        return clueNumbers[row][col];
+    }
 
     public char getCellChar(int row, int col){
         return cellValues[row][col];
