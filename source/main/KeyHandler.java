@@ -33,8 +33,6 @@ public class KeyHandler extends KeyAdapter {
                 int col = e.getX() / gp.getCellSize();
 
                 grid.setSelectedCell(row, col);
-                grid.switchDirection();
-
                 gp.repaint();
                 wp.updateWordPanel();
             }

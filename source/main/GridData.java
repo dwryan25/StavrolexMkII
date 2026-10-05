@@ -45,6 +45,7 @@ public class GridData {
         }
         else {
             cellFilled[row][col] = !cellFilled[row][col];
+            clueNumbers[row][col] = 0;
         }
     }
 
@@ -68,19 +69,29 @@ public class GridData {
     }
 
     public void moveSelector(int vert, int hor){
-        isHorizontal = vert != -1 && vert != 1;
-        selectedRow = Math.clamp(selectedRow + vert, 0, rows - 1);
-        selectedCol = Math.clamp(selectedCol + hor, 0, cols - 1);
-    }
-    public void setSelectedCell(int row, int col){
-        if (row >= 0 && row < rows && col >= 0 && col < cols) {
-            selectedRow = row;
-            selectedCol = col;
-
+        //Logical sequence checks if current direction matches the cursor movement. If it does not then the direction is simply switched.
+        if((isHorizontal && (vert == 1 || vert ==-1)) || (!isHorizontal && (hor == 1 || hor ==-1))){
+            isHorizontal = !isHorizontal;
+        }
+        else{
+            selectedRow = Math.clamp(selectedRow + vert, 0, rows - 1);
+            selectedCol = Math.clamp(selectedCol + hor, 0, cols - 1);
         }
     }
 
-    public void updateClueNumbers(){
+
+    public void setSelectedCell(int row, int col){
+        if (row >= 0 && row < rows && col >= 0 && col < cols) {
+            if (row == selectedRow && col == selectedCol){
+                switchDirection();
+                return;
+            }
+            selectedRow = row;
+            selectedCol = col;
+        }
+    }
+
+    /*public void updateClueNumbers(){
         int clueCounter = 1;
         for( int i = 0; i < 15; i++){
             for(int j = 0; j < 15; j++){
@@ -104,6 +115,33 @@ public class GridData {
                    clueNumbers[i][j] = 0;
                 }//middle of grid cases
 
+            }
+        }
+    }*/
+
+
+    public void updateClueNumbers(){
+        int clueCounter = 1;
+
+        for (int i = 0; i < 15; i++){
+            for (int j = 0; j <15; j++){
+
+
+                //Condition: If a cell's left adjacent cell is filled or null-> mark it as an across start
+                boolean acrossStart = (j == 0 || cellFilled[i][j-1]) && (j+1 < cols && !cellFilled[i][j+1]);
+                //Condition: If a cell's upper adjacent cell is filled or null -> mark it as an across start
+                boolean downStart = (i == 0 || cellFilled[i-1][j]) && (i+1 < rows && !cellFilled[i+1][j]);
+                //If either or both is true-> assign the cell a clue number and increment counter
+                if(acrossStart || downStart){
+                    clueNumbers[i][j] = clueCounter;
+                    clueCounter++;
+                }
+                else if (cellFilled[i][j]){
+                    clueNumbers[i][j] = 0;
+                }
+                else{
+                    clueNumbers[i][j] = 0;
+                }
             }
         }
     }
@@ -152,6 +190,10 @@ public class GridData {
     }
 
     public int[] getHorizontalWordIndices(int row, int col){
+        if(cellFilled[row][col]){
+            return new int[]{0,0};
+        }
+
         int start = -1;
         int end = 15;
         //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
@@ -199,7 +241,7 @@ public class GridData {
     }
 
     public int getHorizontalClueNumber(int row, int col){
-            return clueNumbers[row][getHorizontalWordIndices(row, col)[0]];
+        return clueNumbers[row][getHorizontalWordIndices(row, col)[0]];
     }
 
     public int getVerticalClueNumber(int row, int col){
