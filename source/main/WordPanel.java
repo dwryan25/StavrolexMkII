@@ -7,12 +7,16 @@ import java.awt.*;
 public class WordPanel extends JPanel {
 
     private final GridData grid;
+
     private final JTextField across, down;
     private final JLabel acrosslabel, downLabel;
+
+    private final JScrollPane acrossList, downList;
 
 
     private static final int FONT_SIZE = 18;
     private static final Font CHAR_FONT = new Font("Plain", Font.PLAIN, FONT_SIZE);
+    private static final Font LIST_FONT = new Font("Italicized", Font.ITALIC, FONT_SIZE);
     private static final Color FIELD_COLOR = Color.WHITE;
 
 
@@ -23,6 +27,11 @@ public class WordPanel extends JPanel {
         this.downLabel = createLabel("Down");
         this.across = createTextField();
         this.down = createTextField();
+
+        this.acrossList = createListField();
+        this.downList = createListField();
+
+
 
         setUpPanel();
 
@@ -36,20 +45,27 @@ public class WordPanel extends JPanel {
         GridBagConstraints constraints = new GridBagConstraints();
 
         constraints.insets = new Insets(5, 10, 5, 10);
-        constraints.fill = GridBagConstraints.CENTER;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.anchor = GridBagConstraints.WEST;
 
         constraints.gridx = 0; constraints.gridy = 0; constraints.weightx = 0;
         this.add(acrosslabel, constraints);
 
-        constraints.gridx = 0; constraints.gridy = 1; constraints.weightx = 1.0;
+
+        constraints.gridx = 0; constraints.gridy = 1; constraints.weightx = 0;
         this.add(across, constraints);
 
         constraints.gridx = 0; constraints.gridy = 2; constraints.weightx = 0;
-        this.add(downLabel, constraints);
+        this.add(acrossList, constraints);
 
         constraints.gridx = 0; constraints.gridy = 3; constraints.weightx = 1.0;
+        this.add(downLabel, constraints);
+
+        constraints.gridx = 0; constraints.gridy = 4; constraints.weightx = 0;
         this.add(down, constraints);
+
+        constraints.gridx = 0; constraints.gridy = 5; constraints.weightx = 0;
+        this.add(downList, constraints);
     }
 
 
@@ -70,6 +86,23 @@ public class WordPanel extends JPanel {
         wordBox.setForeground(Color.BLACK);
 
         return wordBox;
+    }
+
+    private JScrollPane createListField(){
+        JTextArea list = new JTextArea();
+        list.setLineWrap(true);
+        list.setWrapStyleWord(false);
+        list.setEditable(false);
+        list.setFont(LIST_FONT);
+        list.setBackground(FIELD_COLOR);
+        list.setForeground(Color.BLACK);
+
+        list.setText("\0");
+
+        JScrollPane pane = new JScrollPane(list);
+        pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+
+        return pane;
     }
 
     public void updateWordPanel(){

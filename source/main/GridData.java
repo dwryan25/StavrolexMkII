@@ -42,11 +42,15 @@ public class GridData {
             }
             cellFilled[row][col] = !cellFilled[row][col];
             cellFilled[symRow][symCol] = !cellFilled[symRow][symCol];
+            clueNumbers[symRow][symCol] = 0;
+
         }
         else {
             cellFilled[row][col] = !cellFilled[row][col];
             clueNumbers[row][col] = 0;
         }
+        cellValues[row][col] = '\0';
+        advanceSelector();
     }
 
     public void advanceSelector(){
@@ -91,33 +95,6 @@ public class GridData {
         }
     }
 
-    /*public void updateClueNumbers(){
-        int clueCounter = 1;
-        for( int i = 0; i < 15; i++){
-            for(int j = 0; j < 15; j++){
-                if(i-1 < 0 || j-1 < 0){
-                    if(cellFilled[i][j]){
-                        clueNumbers[i][j] = 0;
-                    }
-                    else {
-                        clueNumbers[i][j] = clueCounter;
-                        clueCounter++;
-                    }
-               }//accounts for edge of grid cases
-               else if ((cellFilled[i][j-1] || cellFilled[i-1][j]) && !cellFilled[i][j]){
-                   clueNumbers[i][j] = clueCounter;
-                   clueCounter++;
-               }//adjacent to filled square cases
-               else if (cellFilled[i][j]){
-                   clueNumbers[i][j] = 0;
-                }//filled cases
-               else{
-                   clueNumbers[i][j] = 0;
-                }//middle of grid cases
-
-            }
-        }
-    }*/
 
 
     public void updateClueNumbers(){
@@ -136,9 +113,11 @@ public class GridData {
                     clueNumbers[i][j] = clueCounter;
                     clueCounter++;
                 }
+                //If cell is black -> assign 0
                 else if (cellFilled[i][j]){
                     clueNumbers[i][j] = 0;
                 }
+                //Middle of grid cases -> assign 0
                 else{
                     clueNumbers[i][j] = 0;
                 }
@@ -214,6 +193,9 @@ public class GridData {
         return new int[]{start, end};
     }
     public int[] getVerticalWordIndices(int row, int col){
+        if(cellFilled[row][col]){
+            return new int[]{0,0};
+        }
         int start = -1;
         int end = 15;
         //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
@@ -235,16 +217,26 @@ public class GridData {
         return new int[]{start, end};
     }
 
+    public void clearWhiteSquares(){
+        return;
+    }
+
 
     public int getCellClueNumber(int row, int col) {
         return clueNumbers[row][col];
     }
 
     public int getHorizontalClueNumber(int row, int col){
+        if(cellFilled[row][col]){
+            return 0;
+        }
         return clueNumbers[row][getHorizontalWordIndices(row, col)[0]];
     }
 
     public int getVerticalClueNumber(int row, int col){
+        if(cellFilled[row][col]){
+            return 0;
+        }
         return clueNumbers[getVerticalWordIndices(row, col)[0]][col];
     }
 

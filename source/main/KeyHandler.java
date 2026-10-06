@@ -63,8 +63,6 @@ public class KeyHandler extends KeyAdapter {
                         }
                         grid.advanceSelector();
                     }
-
-
                 }
 
                 gp.repaint();

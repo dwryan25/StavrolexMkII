@@ -15,13 +15,19 @@ public class Main {
             window.setTitle("Stavrolex");
 
             GridData crossword = new GridData(15, 15);
+            MenuHandler menuHandler = new MenuHandler(crossword);
+
             GamePanel gamePanel = new GamePanel(crossword, 50);
             WordPanel wordPanel = new WordPanel(crossword);
+            DictionaryHandler dict = new DictionaryHandler(wordPanel);
+
             new KeyHandler(crossword, gamePanel, wordPanel);
 
 
             window.add(gamePanel, BorderLayout.CENTER);
+            window.setJMenuBar(menuHandler);
             window.add(wordPanel, BorderLayout.EAST);
+
             window.pack();
 
 
