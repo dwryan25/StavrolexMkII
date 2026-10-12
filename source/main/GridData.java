@@ -218,7 +218,7 @@ public class GridData {
     }
 
     public void clearWhiteSquares(){
-        return;
+
     }
 
 

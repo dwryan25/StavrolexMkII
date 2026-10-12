@@ -16,10 +16,9 @@ public class Main {
 
             GridData crossword = new GridData(15, 15);
             MenuHandler menuHandler = new MenuHandler(crossword);
-
+            DictionaryHandler dict = new DictionaryHandler(crossword);
             GamePanel gamePanel = new GamePanel(crossword, 50);
-            WordPanel wordPanel = new WordPanel(crossword);
-            DictionaryHandler dict = new DictionaryHandler(wordPanel);
+            WordPanel wordPanel = new WordPanel(crossword, dict);
 
             new KeyHandler(crossword, gamePanel, wordPanel);
 

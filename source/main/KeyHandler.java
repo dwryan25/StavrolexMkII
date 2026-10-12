@@ -5,6 +5,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 
 public class KeyHandler extends KeyAdapter {
@@ -34,7 +35,11 @@ public class KeyHandler extends KeyAdapter {
 
                 grid.setSelectedCell(row, col);
                 gp.repaint();
-                wp.updateWordPanel();
+                try {
+                    wp.updateWordPanel();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -66,7 +71,11 @@ public class KeyHandler extends KeyAdapter {
                 }
 
                 gp.repaint();
-                wp.updateWordPanel();
+                try {
+                    wp.updateWordPanel();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }//end keyPressed
 
         });

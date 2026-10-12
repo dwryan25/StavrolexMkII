@@ -2,11 +2,13 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 
 public class WordPanel extends JPanel {
 
     private final GridData grid;
+    private final DictionaryHandler dict;
 
     private final JTextField across, down;
     private final JLabel acrosslabel, downLabel;
@@ -20,8 +22,9 @@ public class WordPanel extends JPanel {
     private static final Color FIELD_COLOR = Color.WHITE;
 
 
-    public WordPanel(GridData grid){
+    public WordPanel(GridData grid, DictionaryHandler dict){
         this.grid = grid;
+        this.dict = dict;
 
         this.acrosslabel = createLabel("Across");
         this.downLabel = createLabel("Down");
@@ -97,15 +100,15 @@ public class WordPanel extends JPanel {
         list.setBackground(FIELD_COLOR);
         list.setForeground(Color.BLACK);
 
-        list.setText("\0");
-
         JScrollPane pane = new JScrollPane(list);
         pane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
         return pane;
     }
 
-    public void updateWordPanel(){
+    public void updateWordPanel() throws IOException {
+
+        dict.updateWordLists();
 
         int selectedRow = grid.getSelectedRow();
         int selectedCol = grid.getSelectedCol();
@@ -128,6 +131,13 @@ public class WordPanel extends JPanel {
         repaint();
     }
 
+
+    public String getAcrossWord(){
+        return across.getText();
+    }
+    public String getDownWord(){
+        return down.getText();
+    }
 
 
 
