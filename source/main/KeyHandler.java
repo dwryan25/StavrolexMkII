@@ -5,6 +5,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 
 public class KeyHandler extends KeyAdapter {
@@ -19,24 +20,25 @@ public class KeyHandler extends KeyAdapter {
         this.grid = grid;
         this.wp = wp;
 
-        attachListeners();
+        attachGPListeners();
     }
 
-    private void attachListeners() {
+    private void attachGPListeners() {
         gp.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mouseClicked(e);
                 gp.requestFocusInWindow();
 
                 int row = e.getY() / gp.getCellSize();
                 int col = e.getX() / gp.getCellSize();
 
                 grid.setSelectedCell(row, col);
-                grid.switchDirection();
-
                 gp.repaint();
-                wp.updateWordPanel();
+                try {
+                    wp.updateWordPanel();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -62,17 +64,21 @@ public class KeyHandler extends KeyAdapter {
                         if(Character.isLetterOrDigit(input) && !grid.isCellBlack(row, col)){
                             System.out.println("setting char");
                             grid.setCellChar(row, col, input);
+                            grid.advanceSelector();
                         }
-                        grid.advanceSelector();
                     }
-
-
                 }
 
                 gp.repaint();
-                wp.updateWordPanel();
+                try {
+                    wp.updateWordPanel();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }//end keyPressed
 
         });
-    }//end attachListeners
+    }//end attachListener
+
+
 }//end class KeyHandler

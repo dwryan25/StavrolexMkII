@@ -26,12 +26,9 @@ public class GamePanel extends JPanel {
         this.setBackground(Color.WHITE);
 
 
-
         this.setFocusable(true);
 
-
     }
-
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
@@ -41,7 +38,6 @@ public class GamePanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setFont(CELL_FONT);
         FontMetrics fmChar = g2.getFontMetrics(CELL_FONT);
-        FontMetrics fmClueNum = g2.getFontMetrics(CLUENUM_FONT);
 
         int selectedRow = grid.getSelectedRow();
         int selectedCol = grid.getSelectedCol();
