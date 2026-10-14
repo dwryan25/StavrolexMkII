@@ -1,6 +1,9 @@
 package main;
 
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class GridData {
     private final int rows;
     private final int cols;
@@ -8,6 +11,8 @@ public class GridData {
     private final char[][] cellValues;
     private final boolean[][] cellFilled;
     private final int[][] clueNumbers;
+
+    private final Map<String, String> clues;
 
     private int selectedRow;
     private int selectedCol;
@@ -23,10 +28,16 @@ public class GridData {
         this.cellFilled = new boolean[rows][cols];
         this.clueNumbers = new int[rows][cols];
 
+        this.clues = new HashMap<>(100);
+
     }
 
     public void setCellChar(int row, int col, char input){
         cellValues[row][col] = input;
+    }
+
+    public void setClue(String key, String clue){
+        clues.put(key, clue);
     }
 
     public void toggleSymmetry(){
@@ -102,7 +113,6 @@ public class GridData {
 
         for (int i = 0; i < 15; i++){
             for (int j = 0; j <15; j++){
-
 
                 //Condition: If a cell's left adjacent cell is filled or null-> mark it as an across start
                 boolean acrossStart = (j == 0 || cellFilled[i][j-1]) && (j+1 < cols && !cellFilled[i][j+1]);
@@ -240,6 +250,11 @@ public class GridData {
         return clueNumbers[getVerticalWordIndices(row, col)[0]][col];
     }
 
+
+
+    public String getClue(String key){
+        return clues.getOrDefault(key, "(Your Clue");
+    }
 
     public char getCellChar(int row, int col){
         return cellValues[row][col];

@@ -20,14 +20,13 @@ public class KeyHandler extends KeyAdapter {
         this.grid = grid;
         this.wp = wp;
 
-        attachListeners();
+        attachGPListeners();
     }
 
-    private void attachListeners() {
+    private void attachGPListeners() {
         gp.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mouseClicked(e);
                 gp.requestFocusInWindow();
 
                 int row = e.getY() / gp.getCellSize();
@@ -65,8 +64,8 @@ public class KeyHandler extends KeyAdapter {
                         if(Character.isLetterOrDigit(input) && !grid.isCellBlack(row, col)){
                             System.out.println("setting char");
                             grid.setCellChar(row, col, input);
+                            grid.advanceSelector();
                         }
-                        grid.advanceSelector();
                     }
                 }
 
@@ -79,5 +78,7 @@ public class KeyHandler extends KeyAdapter {
             }//end keyPressed
 
         });
-    }//end attachListeners
+    }//end attachListener
+
+
 }//end class KeyHandler
