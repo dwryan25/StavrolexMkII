@@ -242,6 +242,7 @@ public class GridData {
             }
         }
         clues.clear();
+        setSelectedCell(0,0);
     }
 
 
@@ -313,6 +314,7 @@ public class GridData {
             parsedClues.put(line.substring(0, split), line.substring(split+1));
         }
         clearPuzzle();
+        isSymmetrical = false;
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
