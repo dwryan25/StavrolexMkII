@@ -1,4 +1,4 @@
 package main;
 
-public enum LetterType{VOWEL, CONSONANT, ANY};
+public enum LetterType{VOWEL, CONSONANT, ANY}
 
