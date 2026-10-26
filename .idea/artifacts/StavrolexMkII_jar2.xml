@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="StavrolexMkII:jar2">
+    <output-path>$PROJECT_DIR$/out/artifacts/StavrolexMkII_jar</output-path>
+    <root id="archive" name="StavrolexMkII.jar">
+      <element id="module-output" name="StavrolexMkII" />
+    </root>
+  </artifact>
+</component>

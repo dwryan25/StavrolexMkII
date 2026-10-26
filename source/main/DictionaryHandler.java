@@ -1,65 +1,92 @@
 package main;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.awt.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 
 public class DictionaryHandler {
 
-    private final GridData gridData;
+    public record Entry(String word, int score) {}
 
-    private static final Path dictPath = Path.of("words.txt");
+    private final Map<Integer, List<Entry>> byLength = new HashMap<>();
 
-    private ArrayList<String> possAcrossWords;
-    private ArrayList<String> possDownWords;
-
-
-    public DictionaryHandler(GridData gridData){
-        this.gridData = gridData;
-
-        possAcrossWords = new ArrayList<>();
-        possDownWords = new ArrayList<>();
-    }
-
-
-    public void updateWordLists() throws IOException {
-
-        int selectedRow = gridData.getSelectedRow();
-        int selectedCol = gridData.getSelectedCol();
-
-        String acrossRegex = toRegex(gridData.getAcrossWord(selectedRow, selectedCol));
-        String downRegex = toRegex(gridData.getDownWord(selectedRow, selectedCol));
-
-        possAcrossWords = findWords( acrossRegex);
-        possDownWords = findWords(downRegex);
-    }
-
-    private ArrayList<String> findWords(String p) throws IOException {
-        Pattern pattern = Pattern.compile(p, Pattern.CASE_INSENSITIVE);
-        try (Stream<String> lines = Files.lines(dictPath)){
-            return (ArrayList<String>) lines
-                    .map(String::trim)
-                    .filter(word -> !word.isEmpty())
-                    .filter(word -> pattern.matcher(word).matches())
-                    .toList();
+    public void add(String rawWord, int score) {
+        String word = rawWord.toUpperCase().replaceAll("[^A-Z]", "");
+        if (word.isEmpty()) {
+            return;
         }
-    }
+        byLength.computeIfAbsent(word.length(), k -> new ArrayList<>())
+                .add(new Entry(word, score));
+    }//end add()
 
-    private String toRegex(String word){
-        StringBuilder regexPattern = new StringBuilder("^");
-        for(int i = 0; i < word.length(); i++){
-            if(word.charAt(i) == '-'){
-                regexPattern.append('.');
-            }
-            else{
-                regexPattern.append(word.charAt(i));
+
+    public void load(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+
+                String[] parts = line.split(";");
+                int score = 0;
+
+                if (parts.length > 1) {
+                    try {
+                        score = Integer.parseInt(parts[1].trim());
+                    } catch (NumberFormatException e) {
+                        continue;
+                    }
+                }
+                add(parts[0], score);
             }
         }
-        regexPattern.append('$');
-        return regexPattern.toString();
+
+        for(List<Entry> bucket : byLength.values()){
+            bucket.sort(Comparator.comparingInt(Entry::score).reversed());
+        }
+    }//end load()
+
+    public List<Entry> wordsOfLength(int length){
+        return byLength.getOrDefault(length, List.of());
     }
-}
+
+
+    public List<Entry> match(String pattern, CellConstraint[] c){
+        String p = pattern.toUpperCase();
+        List<Entry>results = new ArrayList<>();
+        for (Entry e : wordsOfLength(p.length())){
+            if(fits(e.word(), p, c)){
+                results.add(e);
+            }
+        }
+        return results;
+    }
+
+    private static boolean fits(String word, String pattern, CellConstraint[] cellConstraint){
+        for (int i = 0; i < pattern.length(); i++){
+            char c = pattern.charAt(i);
+            boolean wildcard = (c == '-' || c == '.' || c == '?');
+            if(!wildcard && c != word.charAt(i)){
+                return false;
+            }
+            else if (i < cellConstraint.length && !cellConstraint[i].accepts(word.charAt(i))){
+                return false;
+            }
+        }
+        return true;
+    }
+
+}//end DictionaryHandler

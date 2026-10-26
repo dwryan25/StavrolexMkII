@@ -1,8 +1,11 @@
 package main;
 
 
-import java.util.Map;
-import java.util.HashMap;
+import java.nio.file.Files;
+import java.util.*;
+import java.nio.file.Path;
+import java.io.File;
+import java.io.IOException;
 
 public class GridData {
     private final int rows;
@@ -11,6 +14,8 @@ public class GridData {
     private final char[][] cellValues;
     private final boolean[][] cellFilled;
     private final int[][] clueNumbers;
+
+    private final CellConstraint[][] cellConstraints;
 
     private final Map<String, String> clues;
 
@@ -21,16 +26,25 @@ public class GridData {
     private boolean isHorizontal = true;
 
 
+
     public GridData(int rows, int cols){
         this.rows = rows;
         this.cols = cols;
         this.cellValues = new char[rows][cols];
         this.cellFilled = new boolean[rows][cols];
         this.clueNumbers = new int[rows][cols];
-
+        this.cellConstraints = new CellConstraint[rows][cols];
+        for(CellConstraint[] row : cellConstraints){
+            Arrays.fill(row, CellConstraint.NONE);
+        }
         this.clues = new HashMap<>(100);
 
     }
+
+    public void setCellConstraint(int row, int col, CellConstraint constraint){
+        cellConstraints[row][col] = constraint == null ? CellConstraint.NONE : constraint;
+    }
+
 
     public void setCellChar(int row, int col, char input){
         cellValues[row][col] = input;
@@ -61,6 +75,7 @@ public class GridData {
             clueNumbers[row][col] = 0;
         }
         cellValues[row][col] = '\0';
+        cellConstraints[row][col] = CellConstraint.NONE;
         advanceSelector();
     }
 
@@ -111,8 +126,8 @@ public class GridData {
     public void updateClueNumbers(){
         int clueCounter = 1;
 
-        for (int i = 0; i < 15; i++){
-            for (int j = 0; j <15; j++){
+        for (int i = 0; i < rows; i++){
+            for (int j = 0; j < cols; j++){
 
                 //Condition: If a cell's left adjacent cell is filled or null-> mark it as an across start
                 boolean acrossStart = (j == 0 || cellFilled[i][j-1]) && (j+1 < cols && !cellFilled[i][j+1]);
@@ -184,7 +199,7 @@ public class GridData {
         }
 
         int start = -1;
-        int end = 15;
+        int end = cols;
         //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
         for (int i = col; i >= 0; i--){
             if(cellFilled[row][i]){
@@ -192,14 +207,14 @@ public class GridData {
                 break;
             }
         }
-        for (int j = col; j <= 14; j++){
+        for (int j = col; j < cols; j++){
             if(cellFilled[row][j]){
                 end = j-1;
                 break;
             }
         }
         start = (start==-1) ? 0 : start;
-        end = (end==15) ? 14 : end;
+        end = (end==cols) ? cols-1 : end;
         return new int[]{start, end};
     }
     public int[] getVerticalWordIndices(int row, int col){
@@ -215,20 +230,56 @@ public class GridData {
                 break;
             }
         }
-        for (int j = row; j <= 14; j++){
+        for (int j = row; j < rows; j++){
             if(cellFilled[j][col]){
                 end = j-1;
                 break;
             }
         }
         start = (start==-1) ? 0 : start;
-        end = (end==15) ? 14 : end;
+        end = (end==rows) ? rows-1 : end;
 
         return new int[]{start, end};
     }
 
-    public void clearWhiteSquares(){
+    public CellConstraint[] getAcrossConstraints(int row, int[] indices){
+        int start = indices[0];
+        int end = indices[1];
+        CellConstraint[] constraints = new CellConstraint[end-start+1];
+        for(int i = start; i <= end; i++){
+            constraints[i-start] = cellConstraints[row][i];
+        }
+        return constraints;
+    }
 
+    public CellConstraint[] getDownConstraints(int col, int[] indices){
+        int start = indices[0];
+        int end = indices[1];
+        CellConstraint[] constraints = new CellConstraint[end-start+1];
+        for(int i = start; i <= end; i++){
+            constraints[i-start] = cellConstraints[i][col];
+        }
+        return constraints;
+    }
+
+    public void clearPuzzle(){
+        for(int i = 0; i < rows; i ++){
+            for (int j = 0; j < cols; j++){
+                clueNumbers[i][j] = 0;
+                cellValues[i][j] = '\0';
+                cellFilled[i][j] = false;
+                cellConstraints[i][j] = CellConstraint.NONE;
+            }
+        }
+        clues.clear();
+        setSelectedCell(0,0);
+    }
+    public void clearConstraints(){
+        for(int i = 0; i < rows; i ++) {
+            for (int j = 0; j < cols; j++) {
+                cellConstraints[i][j] = CellConstraint.NONE;
+            }
+        }
     }
 
 
@@ -250,19 +301,92 @@ public class GridData {
         return clueNumbers[getVerticalWordIndices(row, col)[0]][col];
     }
 
+    public void saveTo(Path file) throws IOException {
+        List<String> lines = new ArrayList<>();
+        lines.add(rows + " " + cols);
+        for(int r = 0; r < rows; r++){
+            StringBuilder sb = new StringBuilder();
+            for(int c = 0; c < cols; c++){
+                sb.append(isCellBlack(r, c) ? "#" : isCellEmpty(r, c) ? "." : getCellChar(r, c));
+            }
+            lines.add(sb.toString());
+        }
+        clues.forEach((key, val) -> lines.add(key + ":" + val));
+
+        Files.write(file, lines);
+    }
+
+    public void loadFrom(File file) throws IOException {
+        List<String> lines = Files.readAllLines(file.toPath());
+        if(lines.isEmpty()){throw new IOException("File is empty");}
+
+        String[] size = lines.get(0).trim().split("\\s+");
+        System.out.println(size[0] + " " + size[1]);
+        try {
+            if(size.length != 2 || Integer.parseInt(size[0]) != rows || Integer.parseInt(size[1]) != cols){
+                System.out.println("File says grid size is " + Integer.parseInt(size[0]) + " " + Integer.parseInt(size[1]));
+                throw new IOException("Wrong grid size");
+            }
+        } catch (NumberFormatException e){
+            System.out.println("File says grid size is " + Integer.parseInt(size[0]) + " " + Integer.parseInt(size[1]));
+            throw new IOException("Bad Header Line", e);
+        }
+
+        //Check grid lines
+        if(lines.size() < rows + 1) {throw new IOException("Missing grid rows");}
+        //Copy of textfile data in char array
+        char[][] parsed = new char[rows][];
+        for(int r = 0; r < rows; r++){
+            String line = lines.get(r+1);
+            if(line.length() != cols){throw new IOException("Column length does not match this grid");}
+            parsed[r] = line.toCharArray();
+        }
+
+        Map<String, String> parsedClues = new HashMap<>();
+        for(int i = 1+rows; i < lines.size(); i++){
+            String line = lines.get(i);
+            if(line.isBlank()) continue;
+            int split = line.indexOf(':');
+            if(split < 0) throw new IOException("Bad clue line");
+            parsedClues.put(line.substring(0, split), line.substring(split+1));
+        }
+        clearPuzzle();
+        isSymmetrical = false;
+
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                char ch = parsed[i][j];
+                if(ch == '#'){
+                    toggleCellBlack(i, j);
+                }
+                else if (Character.isLetterOrDigit(ch)){
+                    setCellChar(i, j, ch);
+                }
+            }
+        }
+        clues.putAll(parsedClues);
+        setSelectedCell(0, 0);
+
+        updateClueNumbers();
+    }
+
 
 
     public String getClue(String key){
-        return clues.getOrDefault(key, "(Your Clue");
+        return clues.getOrDefault(key, "(Your Clue)");
     }
 
     public char getCellChar(int row, int col){
         return cellValues[row][col];
     }
 
+    public CellConstraint getCellConstraint(int row, int col){return cellConstraints[row][col];}
+
     public boolean isCellBlack(int row, int col){
         return cellFilled[row][col];
     }
+
+    public boolean isCellEmpty(int row, int col){ return !cellFilled[row][col] && cellValues[row][col] == '\0';}
 
     public boolean isDirectionHorizontal(){
         return isHorizontal;

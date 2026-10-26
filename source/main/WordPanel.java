@@ -15,8 +15,10 @@ public class WordPanel extends JPanel {
 
 
 
-    private final JTextField across, down;
+    private final WordSnapshot across, down;
     private final JLabel acrosslabel, downLabel;
+
+    private final ConstraintPanel constraintPanel;
 
     private final JTextField acrossClue;
     private final JTextField downClue;
@@ -46,8 +48,11 @@ public class WordPanel extends JPanel {
         this.acrosslabel = createLabel("Across");
         this.downLabel = createLabel("Down");
 
-        this.across = createTextField();
-        this.down = createTextField();
+        this.across = createWordSnapShot();
+        this.down = createWordSnapShot();
+
+        this.constraintPanel = createConstraintsPanel();
+
 
         this.acrossClue = createClueField();
         this.downClue = createClueField();
@@ -55,7 +60,7 @@ public class WordPanel extends JPanel {
         setUpClueListener();
         setUpPanel();
 
-        this.setPreferredSize(new Dimension(300, 200));
+        this.setPreferredSize(new Dimension(300, 300));
         this.setBackground(Color.WHITE);
         this.setFocusable(true);
     }
@@ -94,15 +99,17 @@ public class WordPanel extends JPanel {
     private void setUpPanel(){
         this.setLayout(new GridBagLayout());
 
-        addField(acrosslabel, 0, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(across, 1, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(acrossClue, 2, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(acrossList, 3,1.0, GridBagConstraints.BOTH);
+        addField(constraintPanel, 0, 0.0, GridBagConstraints.HORIZONTAL);
 
-        addField(downLabel, 4, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(down, 5, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(downClue, 6, 0.0, GridBagConstraints.HORIZONTAL);
-        addField(downList, 7, 1.0, GridBagConstraints.BOTH);
+        addField(acrosslabel, 1, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(across, 2, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(acrossClue, 3, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(acrossList, 4,1.0, GridBagConstraints.BOTH);
+
+        addField(downLabel, 5, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(down, 6, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(downClue, 7, 0.0, GridBagConstraints.HORIZONTAL);
+        addField(downList, 8, 1.0, GridBagConstraints.BOTH);
 
     }
 
@@ -132,14 +139,25 @@ public class WordPanel extends JPanel {
         return label;
     }
 
-    private JTextField createTextField(){
-        JTextField wordBox = new JTextField();
-        wordBox.setEditable(false);
+    private WordSnapshot createWordSnapShot(){
+        WordSnapshot wordBox = new WordSnapshot();
         wordBox.setFont(PLAIN);
         wordBox.setBackground(FIELD_COLOR);
         wordBox.setForeground(Color.BLACK);
 
         return wordBox;
+    }
+
+    private ConstraintPanel createConstraintsPanel(){
+        ConstraintPanel constraintPanel = new ConstraintPanel(c -> {
+            grid.setCellConstraint(grid.getSelectedRow(), grid.getSelectedCol(), c);
+            refreshMatches();
+        });
+        constraintPanel.setFont(PLAIN);
+        constraintPanel.setBackground(FIELD_COLOR);
+        constraintPanel.setForeground(Color.BLACK);
+
+        return constraintPanel;
     }
 
     private JTextField createClueField(){
@@ -179,37 +197,52 @@ public class WordPanel extends JPanel {
         String acrossText = grid.getAcrossWord(selectedRow, selectedCol);
         String downText = grid.getDownWord(selectedRow, selectedCol);
 
+        int downIndex = selectedRow - grid.getVerticalWordIndices(selectedRow, selectedCol)[0];
+        int acrossIndex = selectedCol - grid.getHorizontalWordIndices(selectedRow, selectedCol)[0];
+
         int acrossClueNum = grid.getHorizontalClueNumber(selectedRow, selectedCol);
         int downClueNum = grid.getVerticalClueNumber(selectedRow, selectedCol);
 
         System.out.println(acrossText);
 
         acrosslabel.setText(acrossClueNum + " Across");
-        across.setText(acrossText);
+        across.setWord(acrossText, acrossIndex);
 
         acrossClue.setText(grid.getClue(acrosslabel.getText()));
 
         downLabel.setText(downClueNum + " Down");
-        down.setText(downText);
+        down.setWord(downText, downIndex);
 
         downClue.setText(grid.getClue(downLabel.getText()));
 
         System.out.println("adding word segment to wordpanel");
 
-        showMatches(acrossText, acrossArea);
-        showMatches(downText, downArea);
+        constraintPanel.setConstraint(grid.getCellConstraint(selectedRow, selectedCol));
+        constraintPanel.setControlsEnabled(!grid.isCellBlack(selectedRow, selectedCol));
 
+        refreshMatches();
+    }
+
+    public void refreshMatches(){
+        int selectedRow = grid.getSelectedRow();
+        int selectedCol = grid.getSelectedCol();
+
+        String acrossText = grid.getAcrossWord(selectedRow, selectedCol);
+        String downText = grid.getDownWord(selectedRow, selectedCol);
+
+        showMatches(acrossText, grid.getAcrossConstraints(selectedRow, grid.getHorizontalWordIndices(selectedRow, selectedCol)) , acrossArea);
+        showMatches(downText, grid.getDownConstraints(selectedCol, grid.getVerticalWordIndices(selectedRow, selectedCol)), downArea);
     }
 
 
-    public void showMatches(String text, JTextArea textArea){
+    public void showMatches(String text, CellConstraint[] c, JTextArea textArea){
         if(text == null || text.isEmpty()){
             textArea.setText("");
         }
 
         String pattern = text.replaceAll("[^A-Za-z]", ".");
 
-        List<DictionaryHandler.Entry> hits = dict.match(pattern);
+        List<DictionaryHandler.Entry> hits = dict.match(pattern, c);
 
         StringBuilder sb = new StringBuilder();
         int shown = Math.min(hits.size(), MAX_RESULT);
@@ -223,7 +256,7 @@ public class WordPanel extends JPanel {
         if (hits.isEmpty()) {
             sb.append("(no matches)");
         }
-        System.out.println("pattern=[" + pattern + "] hits=" + dict.match(pattern).size());
+        System.out.println("pattern=[" + pattern + "] hits=" + dict.match(pattern, c).size());
         textArea.setText(sb.toString());
         textArea.setCaretPosition(0); // scroll back to the top for each new selection
     }
