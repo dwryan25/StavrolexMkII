@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 
 public class CrossWord {
@@ -25,9 +26,14 @@ public class CrossWord {
         window.setResizable(false);
         window.setTitle("Stavrolex");
 
+        InputStream inputStream = getClass().getResourceAsStream("/xwordlist.dict");
+
+        if (inputStream == null){
+            throw new RuntimeException("Could not find 'xwordlist.dict' in the JAR resources folder.");
+        }
         DictionaryHandler dict = new DictionaryHandler();
         try {
-            dict.load(Path.of("resources/xwordlist.dict"));
+            dict.load(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

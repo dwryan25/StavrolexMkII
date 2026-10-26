@@ -15,6 +15,7 @@ public class OptionsHandler extends JMenuBar implements ActionListener{
     private final JMenuItem clear;
     private final JMenuItem startmenu;
     private final JMenuItem save;
+    private final JMenuItem clearConstraints;
 
     private final Runnable onMainMenu;
 
@@ -30,6 +31,7 @@ public class OptionsHandler extends JMenuBar implements ActionListener{
         this.clear = new JMenuItem("Clear white cells");
         this.startmenu = new JMenuItem("Quit");
         this.save = new JMenuItem("Save");
+        this.clearConstraints = new JMenuItem("Clear Constraints");
 
         setUp();
 
@@ -51,16 +53,20 @@ public class OptionsHandler extends JMenuBar implements ActionListener{
         symmetry.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.DARK_GRAY));
         addButton(symmetry, 1, 0, 1.0, GridBagConstraints.CENTER);
 
+        clearConstraints.setActionCommand("clearconstraints");
+        clearConstraints.addActionListener(this);
+        clearConstraints.setBorder(BorderFactory.createMatteBorder(2,2,2,2,Color.DARK_GRAY));
+        addButton(clearConstraints, 2, 0, 0.0, GridBagConstraints.CENTER);
 
         clear.setActionCommand("clearwhites");
         clear.addActionListener(this);
         clear.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.DARK_GRAY));
-        addButton(clear, 2, 0, 0.0, GridBagConstraints.CENTER);
+        addButton(clear, 3, 0, 0.0, GridBagConstraints.CENTER);
 
         startmenu.setActionCommand("quit");
         startmenu.addActionListener(this);
         startmenu.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.DARK_GRAY));
-        addButton(startmenu, 3, 0, 1.0, GridBagConstraints.CENTER);
+        addButton(startmenu, 4, 0, 1.0, GridBagConstraints.CENTER);
 
     }
 
@@ -109,6 +115,9 @@ public class OptionsHandler extends JMenuBar implements ActionListener{
         }
         if("save".equals(e.getActionCommand())){
             saveCrossword();
+        }
+        if("clearconstraints".equals(e.getActionCommand())){
+            grid.clearConstraints();
         }
 
     }

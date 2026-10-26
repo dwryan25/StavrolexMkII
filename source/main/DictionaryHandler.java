@@ -3,6 +3,9 @@ package main;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.awt.*;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,8 +31,8 @@ public class DictionaryHandler {
     }//end add()
 
 
-    public void load(Path file) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(file)) {
+    public void load(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
 
             while ((line = reader.readLine()) != null) {
@@ -61,23 +64,26 @@ public class DictionaryHandler {
         return byLength.getOrDefault(length, List.of());
     }
 
-    public List<Entry> match(String pattern){
+
+    public List<Entry> match(String pattern, CellConstraint[] c){
         String p = pattern.toUpperCase();
         List<Entry>results = new ArrayList<>();
-
         for (Entry e : wordsOfLength(p.length())){
-            if(fits(e.word(), p)){
+            if(fits(e.word(), p, c)){
                 results.add(e);
             }
         }
         return results;
     }
 
-    private static boolean fits(String word, String pattern){
+    private static boolean fits(String word, String pattern, CellConstraint[] cellConstraint){
         for (int i = 0; i < pattern.length(); i++){
             char c = pattern.charAt(i);
             boolean wildcard = (c == '-' || c == '.' || c == '?');
             if(!wildcard && c != word.charAt(i)){
+                return false;
+            }
+            else if (i < cellConstraint.length && !cellConstraint[i].accepts(word.charAt(i))){
                 return false;
             }
         }

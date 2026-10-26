@@ -2,10 +2,7 @@ package main;
 
 
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.nio.file.Path;
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +15,8 @@ public class GridData {
     private final boolean[][] cellFilled;
     private final int[][] clueNumbers;
 
+    private final CellConstraint[][] cellConstraints;
+
     private final Map<String, String> clues;
 
     private int selectedRow;
@@ -27,16 +26,25 @@ public class GridData {
     private boolean isHorizontal = true;
 
 
+
     public GridData(int rows, int cols){
         this.rows = rows;
         this.cols = cols;
         this.cellValues = new char[rows][cols];
         this.cellFilled = new boolean[rows][cols];
         this.clueNumbers = new int[rows][cols];
-
+        this.cellConstraints = new CellConstraint[rows][cols];
+        for(CellConstraint[] row : cellConstraints){
+            Arrays.fill(row, CellConstraint.NONE);
+        }
         this.clues = new HashMap<>(100);
 
     }
+
+    public void setCellConstraint(int row, int col, CellConstraint constraint){
+        cellConstraints[row][col] = constraint == null ? CellConstraint.NONE : constraint;
+    }
+
 
     public void setCellChar(int row, int col, char input){
         cellValues[row][col] = input;
@@ -67,6 +75,7 @@ public class GridData {
             clueNumbers[row][col] = 0;
         }
         cellValues[row][col] = '\0';
+        cellConstraints[row][col] = CellConstraint.NONE;
         advanceSelector();
     }
 
@@ -233,16 +242,44 @@ public class GridData {
         return new int[]{start, end};
     }
 
+    public CellConstraint[] getAcrossConstraints(int row, int[] indices){
+        int start = indices[0];
+        int end = indices[1];
+        CellConstraint[] constraints = new CellConstraint[end-start+1];
+        for(int i = start; i <= end; i++){
+            constraints[i-start] = cellConstraints[row][i];
+        }
+        return constraints;
+    }
+
+    public CellConstraint[] getDownConstraints(int col, int[] indices){
+        int start = indices[0];
+        int end = indices[1];
+        CellConstraint[] constraints = new CellConstraint[end-start+1];
+        for(int i = start; i <= end; i++){
+            constraints[i-start] = cellConstraints[i][col];
+        }
+        return constraints;
+    }
+
     public void clearPuzzle(){
         for(int i = 0; i < rows; i ++){
             for (int j = 0; j < cols; j++){
                 clueNumbers[i][j] = 0;
                 cellValues[i][j] = '\0';
                 cellFilled[i][j] = false;
+                cellConstraints[i][j] = CellConstraint.NONE;
             }
         }
         clues.clear();
         setSelectedCell(0,0);
+    }
+    public void clearConstraints(){
+        for(int i = 0; i < rows; i ++) {
+            for (int j = 0; j < cols; j++) {
+                cellConstraints[i][j] = CellConstraint.NONE;
+            }
+        }
     }
 
 
@@ -342,6 +379,8 @@ public class GridData {
     public char getCellChar(int row, int col){
         return cellValues[row][col];
     }
+
+    public CellConstraint getCellConstraint(int row, int col){return cellConstraints[row][col];}
 
     public boolean isCellBlack(int row, int col){
         return cellFilled[row][col];

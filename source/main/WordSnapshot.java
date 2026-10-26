@@ -6,83 +6,83 @@ import java.awt.*;
 public class WordSnapshot extends JPanel {
 
 
-    private static final int MAX_BOX = 32;
-    private static final int MIN_BOX = 10;
-    private static final int GAP = 0;
-
+    private static final int MAX_BOX_SIZE = 32;
+    private static final int MIN_BOX_SIZE = 12;
     private String word = "";
     private int selectedIndex;
 
-
+    private final JPanel gridContainer;
 
     public WordSnapshot(){
         setOpaque(false);
-        setFocusable(true);
-        setBorder(BorderFactory.createMatteBorder(2, 2, 2,2, Color.BLUE));
+        setLayout(new GridBagLayout());
+
+        gridContainer = new JPanel();
+        gridContainer.setOpaque(false);
+        gridContainer.setLayout(new GridLayout(1,0,0,0));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(gridContainer, gbc);
     }
 
     public void setWord(String word, int selected){
         this.word = (word == null) ? " " : word;
         this.selectedIndex = selected;
+
+        updateSnapshot();
+
+    }
+
+    private void updateSnapshot(){
+        gridContainer.removeAll();
+
+        int n = word.length();
+        if(n == 0) {
+            revalidate();
+            repaint();
+            return;
+        }
+
+        int availableWidth = getWidth();
+        int size = availableWidth / n;
+        int targetSize = Math.clamp(size, MIN_BOX_SIZE, MAX_BOX_SIZE);
+
+        int fontsize = Math.max(10, targetSize * 3/5);
+        Font cellFont = new Font("Bold", Font.BOLD, fontsize);
+
+        Dimension cellSize = new Dimension(targetSize, targetSize);
+        for(int i = 0; i < word.length(); i++){
+            char ch = word.charAt(i);
+
+            String letter = ch == '-' || Character.isWhitespace(ch) ? " " : String.valueOf(Character.toUpperCase(ch));
+            JLabel cellLabel = new JLabel(letter, SwingConstants.CENTER);
+
+            cellLabel.setFont(cellFont);
+            cellLabel.setBackground(Color.WHITE);
+
+            cellLabel.setPreferredSize(cellSize);
+            cellLabel.setMaximumSize(cellSize);
+            cellLabel.setMinimumSize(cellSize);
+
+            if(i == selectedIndex){
+                cellLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
+            }
+            else{
+                cellLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+            }
+            gridContainer.add(cellLabel);
+        }
+
         revalidate();
         repaint();
     }
 
     @Override
     public Dimension getPreferredSize(){
-        int n = Math.max(1, word.length());
-        // Calculate exactly how wide the panel needs to be to hold all boxes at maximum size
-        int preferredWidth = GAP + n * (MAX_BOX + GAP);
-        int preferredHeight = MAX_BOX + 2 * GAP;
-
-        return new Dimension(preferredWidth, preferredHeight);
+        return new Dimension(super.getPreferredSize().width, MAX_BOX_SIZE);
     }
 
-    @Override
-    protected void paintComponent(Graphics g){
-        super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-
-        int n = word.length();
-        System.out.println("Word length is " + n + "\n");
-        System.out.println("n=" + word.length() + " width=" + getWidth() + " height=" + getHeight());
-        if(n == 0) return;
-
-
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
-        int fit = (getWidth() - GAP) / n - GAP;
-        int size = Math.clamp(fit, MIN_BOX, MAX_BOX);
-        int y = (getHeight() - size) / 2;
-
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, size * 3 / 5));
-        FontMetrics fm = g2.getFontMetrics();
-
-        for (int i = 0; i < n; i++){
-            System.out.println("Setting character " + i + "\n");
-            int x = GAP + i * (size + GAP);
-            g2.setColor(Color.WHITE);
-            g2.fillRect(x, y, size, size);
-            if(i == selectedIndex){
-                g2.setStroke(new BasicStroke(2.0f));
-                g2.setColor(Color.RED);
-            }
-            else{
-                g2.setColor(Color.BLACK);
-                g2.setStroke(new BasicStroke(1.0f));
-            }
-            g2.drawRect(x, y, size, size);
-
-            g2.setColor(Color.BLACK);
-            g2.setStroke(new BasicStroke(1.0f));
-            char ch = word.charAt(i);
-            if(Character.isLetterOrDigit(ch)){
-                String s = String.valueOf(Character.toUpperCase(ch));
-                int tx = x + (size - fm.stringWidth(s)) / 2;
-                int ty = y + (size - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(s, tx, ty);
-            }
-        }
-    }
 }
