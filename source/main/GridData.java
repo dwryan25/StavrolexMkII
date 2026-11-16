@@ -1,6 +1,7 @@
 package main;
 
 
+import java.io.BufferedReader;
 import java.nio.file.Files;
 import java.util.*;
 import java.nio.file.Path;
@@ -128,7 +129,12 @@ public class GridData {
 
         for (int i = 0; i < rows; i++){
             for (int j = 0; j < cols; j++){
+                //If cell is black -> assign 0
 
+                if (cellFilled[i][j]){
+                    clueNumbers[i][j] = 0;
+                    continue;
+                }
                 //Condition: If a cell's left adjacent cell is filled or null-> mark it as an across start
                 boolean acrossStart = (j == 0 || cellFilled[i][j-1]) && (j+1 < cols && !cellFilled[i][j+1]);
                 //Condition: If a cell's upper adjacent cell is filled or null -> mark it as an across start
@@ -136,11 +142,8 @@ public class GridData {
                 //If either or both is true-> assign the cell a clue number and increment counter
                 if(acrossStart || downStart){
                     clueNumbers[i][j] = clueCounter;
+                    System.out.println("Assigning clue num: " + clueCounter + "\n");
                     clueCounter++;
-                }
-                //If cell is black -> assign 0
-                else if (cellFilled[i][j]){
-                    clueNumbers[i][j] = 0;
                 }
                 //Middle of grid cases -> assign 0
                 else{
@@ -222,7 +225,7 @@ public class GridData {
             return new int[]{0,0};
         }
         int start = -1;
-        int end = 15;
+        int end = rows;
         //Search backwards and forwards to find the first and last index. Stop at black squares or out of bounds.
         for (int i = row; i >= 0; i--){
             if(cellFilled[i][col]){
@@ -274,6 +277,16 @@ public class GridData {
         clues.clear();
         setSelectedCell(0,0);
     }
+
+    public void clearWhiteCells(){
+        for(int i = 0; i < rows; i ++){
+            for (int j = 0; j < cols; j++){
+                clueNumbers[i][j] = 0;
+                cellValues[i][j] = '\0';
+                cellConstraints[i][j] = CellConstraint.NONE;
+            }
+        }
+    }
     public void clearConstraints(){
         for(int i = 0; i < rows; i ++) {
             for (int j = 0; j < cols; j++) {
@@ -283,9 +296,7 @@ public class GridData {
     }
 
 
-    public int getCellClueNumber(int row, int col) {
-        return clueNumbers[row][col];
-    }
+    public int getCellClueNumber(int row, int col) {return clueNumbers[row][col];}
 
     public int getHorizontalClueNumber(int row, int col){
         if(cellFilled[row][col]){
@@ -314,6 +325,26 @@ public class GridData {
         clues.forEach((key, val) -> lines.add(key + ":" + val));
 
         Files.write(file, lines);
+    }
+
+    public static int[] readSize(File file) throws IOException{
+        try (BufferedReader reader = Files.newBufferedReader(file.toPath())) {
+            String header = reader.readLine();
+            if (header == null) throw new IOException("File is empty or lacks header");
+            String[] parts = header.replace("\uFEFF", "").trim().split("\\s+");
+            if (parts.length != 2) throw new IOException("Bad header line");
+
+            try {
+                int rows = Integer.parseInt(parts[0]);
+                int cols = Integer.parseInt(parts[1]);
+                if(rows < 3 || rows > 30 || cols < 3 || cols > 30){
+                    throw new IOException("Unsupported Grid size");
+                }
+                return new int[] {rows, cols};
+            } catch(NumberFormatException e) {
+                throw new IOException("bad number format", e);
+            }
+        }
     }
 
     public void loadFrom(File file) throws IOException {

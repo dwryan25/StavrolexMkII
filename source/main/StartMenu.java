@@ -3,14 +3,15 @@ package main;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class StartMenu extends JPanel{
 
-    private final Runnable newPuzzle;
+    private final BiConsumer<Integer, Integer> newPuzzle;
     private final Consumer<File> loaded;
 
-    public StartMenu(Runnable newPuzzle, Consumer<File> loaded){
+    public StartMenu(BiConsumer<Integer, Integer> newPuzzle, Consumer<File> loaded){
         this.newPuzzle = newPuzzle;
         this.loaded = loaded;
 
@@ -49,7 +50,10 @@ public class StartMenu extends JPanel{
 
 
     private void handleNew(){
-        newPuzzle.run();
+        int[] size = DimensionDialog.ask(this);
+        int rows = size[0];
+        int cols = size[1];
+        newPuzzle.accept(rows, cols);
     }
 
     private void handleSaved(){

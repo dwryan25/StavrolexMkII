@@ -151,6 +151,7 @@ public class WordPanel extends JPanel {
     private ConstraintPanel createConstraintsPanel(){
         ConstraintPanel constraintPanel = new ConstraintPanel(c -> {
             grid.setCellConstraint(grid.getSelectedRow(), grid.getSelectedCol(), c);
+            System.out.println("save " + grid.getSelectedRow() + "," + grid.getSelectedCol() + " <- " + c);
             refreshMatches();
         });
         constraintPanel.setFont(PLAIN);
@@ -190,7 +191,7 @@ public class WordPanel extends JPanel {
     }
 
     public void updateWordPanel() throws IOException {
-
+        System.out.println("Update word panel called\n");
         int selectedRow = grid.getSelectedRow();
         int selectedCol = grid.getSelectedCol();
 
@@ -216,7 +217,7 @@ public class WordPanel extends JPanel {
         downClue.setText(grid.getClue(downLabel.getText()));
 
         System.out.println("adding word segment to wordpanel");
-
+        System.out.println("load " + selectedRow + "," + selectedCol + " -> " + grid.getCellConstraint(selectedRow, selectedCol));
         constraintPanel.setConstraint(grid.getCellConstraint(selectedRow, selectedCol));
         constraintPanel.setControlsEnabled(!grid.isCellBlack(selectedRow, selectedCol));
 

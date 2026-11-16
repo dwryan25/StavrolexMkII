@@ -14,7 +14,6 @@ public class GamePanel extends JPanel {
     private static final Color SELECTED_CELL = Color.RED;
     private static final Color BLACK_CELL = Color.BLACK;
     private static final Font CELL_FONT = new Font("Bold", Font.BOLD, 28);
-    private static final Font CLUENUM_FONT = new Font("HyperText", Font.PLAIN, 12);
     private static final Color TEXT_COLOR = Color.BLACK;
 
 
@@ -23,6 +22,7 @@ public class GamePanel extends JPanel {
         this.grid = grid;
 
         this.setPreferredSize(new Dimension(grid.getRows()*cellSize + 1,grid.getCols()*cellSize + 1));
+        this.setPreferredSize(new Dimension(700, 700));
         this.setBackground(Color.WHITE);
 
 
@@ -37,16 +37,19 @@ public class GamePanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setFont(CELL_FONT);
+        Font numFont = calculateFontSize(g2, cellSize, "100");
+        int pad = Math.max(2, cellSize/20);
         FontMetrics fmChar = g2.getFontMetrics(CELL_FONT);
-
+        FontMetrics fmNum = g2.getFontMetrics(numFont);
         int selectedRow = grid.getSelectedRow();
         int selectedCol = grid.getSelectedCol();
         boolean isHorizontal = grid.isDirectionHorizontal();
         BasicStroke borderStroke = new BasicStroke(3.0f);
         BasicStroke defStroke = new BasicStroke(1.0f);
 
-        for (int r = 0; r <15; r++){
-            for (int c = 0; c <15;c++){
+
+        for (int r = 0; r < grid.getRows(); r++){
+            for (int c = 0; c < grid.getCols();c++){
                 //Draw the cell
                 int x = cellSize*c;
                 int y = cellSize*r;
@@ -66,10 +69,8 @@ public class GamePanel extends JPanel {
                     }
                     g2.drawRect(x, y, cellSize - 1, cellSize - 1);
                     if(clueNum != 0) {
-                        g2.setFont(CLUENUM_FONT);
-                        int clueX = x + cellSize / 10;
-                        int clueY = y + cellSize / 4;
-                        g2.drawString(String.valueOf(clueNum), clueX, clueY);
+                        g2.setFont(numFont);
+                        g2.drawString(String.valueOf(clueNum), x + pad, y + pad + fmNum.getAscent());
                     }
                 }
                 //Draw the character inside the cell
@@ -118,6 +119,17 @@ public class GamePanel extends JPanel {
 
         g2.dispose();
     }//end paintComponent
+
+    private Font calculateFontSize(Graphics2D g, int cellSize, String widestText){
+        int maxWidth = (int) (cellSize*0.45);
+        for(int size = cellSize / 3; size >= 6; size--){
+            Font f = new Font(Font.SANS_SERIF, Font.PLAIN, size);
+            if(g.getFontMetrics(f).stringWidth(widestText) <= maxWidth){
+                return f;
+            }
+        }
+        return new Font(Font.SANS_SERIF, Font.PLAIN, 6);
+    }
 
     public int getCellSize(){
         return cellSize;
