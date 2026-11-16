@@ -108,7 +108,7 @@ public class OptionsHandler extends JMenuBar implements ActionListener{
             grid.toggleSymmetry();
         }
         if("clearwhites".equals(e.getActionCommand())){
-            grid.clearPuzzle();
+            grid.clearWhiteCells();
         }
         if("quit".equals(e.getActionCommand())){
             confirmAndReturn();

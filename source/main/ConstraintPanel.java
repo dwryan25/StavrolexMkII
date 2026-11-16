@@ -51,14 +51,14 @@ public class ConstraintPanel extends JPanel{
         vowels.addActionListener(e -> {
             if(vowels.isSelected()) {
                 consonants.setSelected(false);
-                fireChanged();
             }
+            fireChanged();
         });
         consonants.addActionListener(e -> {
             if (consonants.isSelected()) {
                 vowels.setSelected(false);
-                fireChanged();
             }
+            fireChanged();
         });
 
         watch(permitted);
@@ -114,7 +114,7 @@ public class ConstraintPanel extends JPanel{
     }
 
     private void fireChanged(){
-        System.out.println("Firing change\n");
+        System.out.println("fireChanged, updating=" + updating + "\n");
         if(!updating) onChange.accept(buildConstraint());
     }
 

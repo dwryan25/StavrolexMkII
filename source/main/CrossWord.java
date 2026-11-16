@@ -15,9 +15,12 @@ public class CrossWord {
     private final CardLayout cards = new CardLayout();
     private final JPanel root = new JPanel(cards);
 
-    private final GridData crossword;
-    private final GamePanel gamePanel;
-    private final WordPanel wordPanel;
+    private GridData crossword;
+    private GamePanel gamePanel;
+    private WordPanel wordPanel;
+    private JPanel builderPanel;
+
+    private final DictionaryHandler dict = new DictionaryHandler();
 
     public CrossWord(){
         window.setLayout(new BorderLayout());
@@ -30,48 +33,63 @@ public class CrossWord {
         if (inputStream == null){
             throw new RuntimeException("Could not find 'xwordlist.dict' in the JAR resources folder.");
         }
-        DictionaryHandler dict = new DictionaryHandler();
         try {
             dict.load(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        crossword = new GridData(15, 15);
-        OptionsHandler menuHandler = new OptionsHandler(crossword, this::showMainMenu);
-        gamePanel = new GamePanel(crossword, 50);
-        wordPanel = new WordPanel(crossword, dict);
-
-        new KeyHandler(crossword, gamePanel, wordPanel);
-
-        //Cosntructor
-        JPanel constructorPanel = new JPanel(new BorderLayout());
-        constructorPanel.add(gamePanel, BorderLayout.CENTER);
-        constructorPanel.add(wordPanel, BorderLayout.EAST);
-        constructorPanel.add(menuHandler, BorderLayout.NORTH);
-
         //Start Menu
         StartMenu startMenu = new StartMenu(this::startNew, this::loadIn);
-        startMenu.setPreferredSize(constructorPanel.getPreferredSize());
-        root.add(constructorPanel, "Constructor");
-        root.add(startMenu, "Main Menu");
+        startMenu.setPreferredSize(new Dimension(600, 400));
+        root.add(startMenu, MENU);
+
+
 
         window.setContentPane(root);
 
         window.pack();
 
         window.setLocationRelativeTo(null);
-        cards.show(root, "Main Menu");
+        cards.show(root, MENU);
         window.setVisible(true);
     }
 
-    public void startNew(){
-        crossword.clearPuzzle();
+    private void buildConstructor(int rows, int cols){
+        crossword = new GridData(rows, cols);
+        OptionsHandler menuHandler = new OptionsHandler(crossword, this::showMainMenu);
+        int cellSize = Math.min(80, 700 / Math.max(crossword.getRows(), crossword.getCols()));
+        gamePanel = new GamePanel(crossword, cellSize);
+        wordPanel = new WordPanel(crossword, dict);
+
+        new KeyHandler(crossword, gamePanel, wordPanel);
+
+        //Constructor
+        JPanel constructorPanel = new JPanel(new BorderLayout());
+        constructorPanel.add(gamePanel, BorderLayout.CENTER);
+        constructorPanel.add(wordPanel, BorderLayout.EAST);
+        constructorPanel.add(menuHandler, BorderLayout.NORTH);
+
+        if (builderPanel != null) root.remove(builderPanel);
+        builderPanel = constructorPanel;
+        root.add(constructorPanel, CONSTRUCTOR);
+
+        window.pack();
+        window.setLocationRelativeTo(null);
+
+    }
+
+    public void startNew(int rows, int cols){
+        buildConstructor(rows, cols);
         openConstructor();
 
     }
     public void loadIn(File file){
         try {
+            int[] size = GridData.readSize(file);
+            int rows = size[0];
+            int cols = size[1];
+            buildConstructor(rows, cols);
             crossword.loadFrom(file);
         } catch(IOException e){
             JOptionPane.showMessageDialog(window, "Could not load file: \n" + e.getMessage(), "Load Failed", JOptionPane.ERROR_MESSAGE);
